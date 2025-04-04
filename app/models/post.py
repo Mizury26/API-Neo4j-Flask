@@ -34,35 +34,6 @@ class Post(GraphObject):
             "created_at": self.created_at,
         }
 
-    def create_with_user(self, user, graph):
-        graph.create(self.__node__)
-        relationship = Relationship(user.__node__, "CREATED", self.__node__)
-        graph.create(relationship)
-        return self
-
-    def get_creator(self, graph):
-        result = graph.run(
-            f"MATCH (u:User)-[:CREATED]->(p:Post {{id: '{self.id}'}}) RETURN u"
-        ).data()
-        if result:
-            return User.wrap(result[0]["u"])
-        return None
-
-    def get_comments(self, graph):
-        from app.models.comment import Comment
-        result = graph.run(
-            f"MATCH (p:Post {{id: '{self.id}'}})-[:HAS_COMMENT]->(c:Comment) RETURN c"
-        ).data()
-        return [Comment.wrap(record["c"]) for record in result]
-
-    def get_likes_count(self, graph):
-        result = graph.run(
-            f"MATCH (u:User)-[:LIKES]->(p:Post {{id: '{self.id}'}}) RETURN count(u) as count"
-        ).data()
-        if result:
-            return result[0]["count"]
-        return 0
-
     @staticmethod
     def find_by_id(post_id, graph):
         result = graph.run(f"MATCH (p:Post {{id: '{post_id}'}}) RETURN p").data()

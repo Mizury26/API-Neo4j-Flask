@@ -28,53 +28,18 @@ class Comment(GraphObject):
             "content": self.content,
             "created_at": self.created_at
         }
-    
-    def create_with_user_and_post(self, user, post, graph):
-        graph.create(self.__node__)
-        
-        # Create relationship with user (CREATED)
-        user_rel = Relationship(user.__node__, "CREATED", self.__node__)
-        graph.create(user_rel)
-        
-        # Create relationship with post (HAS_COMMENT)
-        post_rel = Relationship(post.__node__, "HAS_COMMENT", self.__node__)
-        graph.create(post_rel)
-        
-        return self
-    
-    def get_creator(self, graph):
-        result = graph.run(f"MATCH (u:User)-[:CREATED]->(c:Comment {{id: '{self.id}'}}) RETURN u").data()
-        if result:
-            return User.wrap(result[0]['u'])
-        return None
-    
-    def get_post(self, graph):
-        from app.models.post import Post
 
-        result = graph.run(f"MATCH (p:Post)-[:HAS_COMMENT]->(c:Comment {{id: '{self.id}'}}) RETURN p").data()
-        if result:
-            return Post.wrap(result[0]['p'])
-        return None
-    
-    def get_likes_count(self, graph):
-        result = graph.run(f"MATCH (u:User)-[:LIKES]->(c:Comment {{id: '{self.id}'}}) RETURN count(u) as count").data()
-        if result:
-            return result[0]['count']
-        return 0
-    
     @staticmethod
-    def find_by_id(comment_id, graph):
-        result = graph.run(f"MATCH (c:Comment {{id: '{comment_id}'}}) RETURN c").data()
-        if result:
-            return Comment.wrap(result[0]['c'])
-        return None
-    
+    def find_by_id(graph, comment_id):
+        result = graph.evaluate("MATCH (c:Comment {id: $id}) RETURN c", id=comment_id)
+        return Comment.wrap(result) if result else None
+
     @staticmethod
     def get_all(graph):
         result = graph.run("MATCH (c:Comment) RETURN c").data()
         return [Comment.wrap(record['c']) for record in result]
-    
+
     @staticmethod
-    def get_by_post(post_id, graph):
-        result = graph.run(f"MATCH (p:Post {{id: '{post_id}'}})-[:HAS_COMMENT]->(c:Comment) RETURN c").data()
+    def get_by_post(graph, post_id):
+        result = graph.run("MATCH (p:Post {id: $post_id})-[:HAS_COMMENT]->(c:Comment) RETURN c", post_id=post_id).data()
         return [Comment.wrap(record['c']) for record in result]

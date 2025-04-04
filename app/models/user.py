@@ -34,58 +34,6 @@ class User(GraphObject):
             "created_at": self.created_at,
         }
 
-    def add_friend(self, friend, graph):
-        if not isinstance(friend, User):
-            raise TypeError("Friend must be a User object")
-
-        relationship = Relationship(self.__node__, "FRIENDS_WITH", friend.__node__)
-        graph.create(relationship)
-        return relationship
-
-    def remove_friend(self, friend, graph):
-        graph.run(
-            f"MATCH (u:User {{id: '{self.id}'}})-[r:FRIENDS_WITH]->(f:User {{id: '{friend.id}'}}) DELETE r"
-        )
-
-    def is_friend_with(self, friend, graph):
-        result = graph.run(
-            f"MATCH (u:User {{id: '{self.id}'}})-[:FRIENDS_WITH]->(f:User {{id: '{friend.id}'}}) RETURN f"
-        ).data()
-        return len(result) > 0
-
-    def get_friends(self, graph):
-        result = graph.run(
-            f"MATCH (u:User {{id: '{self.id}'}})-[:FRIENDS_WITH]->(f:User) RETURN f"
-        ).data()
-        return [User.wrap(record["f"]) for record in result]
-
-    def get_mutual_friends(self, other_user, graph):
-        query = f"""
-        MATCH (u1:User {{id: '{self.id}'}})-[:FRIENDS_WITH]->(mutual:User)<-[:FRIENDS_WITH]-(u2:User {{id: '{other_user.id}'}})
-        RETURN mutual
-        """
-        result = graph.run(query).data()
-        return [User.wrap(record["mutual"]) for record in result]
-
-    def like_post(self, post, graph):
-        relationship = Relationship(self.__node__, "LIKES", post.__node__)
-        graph.create(relationship)
-        return relationship
-
-    def unlike_post(self, post, graph):
-        graph.run(
-            f"MATCH (u:User {{id: '{self.id}'}})-[r:LIKES]->(p:Post {{id: '{post.id}'}}) DELETE r"
-        )
-
-    def like_comment(self, comment, graph):
-        relationship = Relationship(self.__node__, "LIKES", comment.__node__)
-        graph.create(relationship)
-        return relationship
-
-    def unlike_comment(self, comment, graph):
-        graph.run(
-            f"MATCH (u:User {{id: '{self.id}'}})-[r:LIKES]->(c:Comment {{id: '{comment.id}'}}) DELETE r"
-        )
 
     @staticmethod
     def find_by_id(user_id, graph):
