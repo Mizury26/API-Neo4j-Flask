@@ -150,20 +150,20 @@ class UserController:
         except Exception as e:
             return {"error": str(e)}, 500
 
-    def remove_friend(self, user_id, data):
+    def remove_friend(self, user_id, friend_id):
         """Remove a friend"""
         try:
-            if not data or 'friend_id' not in data:
+            if not friend_id:
                 return {"error": "Friend ID is required"}, 400
             
             user = User.find_by_id(user_id, self.graph)
-            friend = User.find_by_id(data['friend_id'], self.graph)
+            friend = User.find_by_id(friend_id, self.graph)
             
             if not user or not friend:
                 return {"error": "User or friend not found"}, 404
             
             self.graph.run(
-                f"MATCH (u:User {{id: '{user_id}'}})-[r:FRIENDS_WITH]->(f:User {{id: '{data['friend_id']}'}}) DELETE r"
+                f"MATCH (u:User {{id: '{user_id}'}})-[r:FRIENDS_WITH]->(f:User {{id: '{friend_id}'}}) DELETE r"
             )
             
             return {"message": "Friend removed successfully"}, 200
@@ -209,15 +209,23 @@ class UserController:
     def add_user_post(self, user_id, data):
         """Add a post for a user"""
         try:
-            if not data or 'content' not in data:
-                return {"error": "Content is required"}, 400
+            # Vérifier à la fois title et content
+            if not data or 'title' not in data or 'content' not in data:
+                return {"error": "Title and content are required"}, 400
             
             user = User.find_by_id(user_id, self.graph)
             if not user:
                 return {"error": "User not found"}, 404
             
-            post = Post(data['content'])
-            post_node = Node("Post", id=post.id, content=post.content, created_at=post.created_at)
+            # Passer title et content au constructeur
+            post = Post(data['title'], data['content'], user)
+            
+            # Ajouter title dans le nœud Neo4j
+            post_node = Node("Post", 
+                            id=post.id, 
+                            title=post.title,
+                            content=post.content, 
+                            created_at=post.created_at)
             self.graph.create(post_node)
             
             self.graph.create(Relationship(user.__node__, "CREATED", post_node))

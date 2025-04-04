@@ -9,6 +9,3 @@ class Config:
     NEO4J_USER = os.getenv('NEO4J_USER', 'neo4j')
     NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD', 'password')
     
-    # Flask configuration
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev_key')
-    DEBUG = os.getenv('DEBUG', 'True') == 'True'

@@ -17,12 +17,6 @@ def get_post(post_id):
     result, status_code = controller.get_post_by_id(post_id)
     return jsonify(result), status_code
 
-@post_bp.route('', methods=['POST'])
-def create_post():
-    """Create a new post"""
-    data = request.get_json()
-    result, status_code = controller.create_post(data)
-    return jsonify(result), status_code
 
 @post_bp.route('/<post_id>', methods=['PUT'])
 def update_post(post_id):

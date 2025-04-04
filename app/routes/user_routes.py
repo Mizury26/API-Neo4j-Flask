@@ -11,7 +11,7 @@ controller = UserController(graph)
 def get_users():
     """Get all users"""
     try:
-        result, status_code = controller.get_all_posts()
+        result, status_code = controller.get_all_users()
         return jsonify(result), status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -27,11 +27,11 @@ def get_user(user_id):
         return jsonify({"error": str(e)}), 500
 
 @user_bp.route('', methods=['POST'])
-def create_user(data):
+def create_user():
     """Create a new user"""
     try:
         data = request.get_json()
-        result, status_code = controller.create_post(data)
+        result, status_code = controller.create_user(data)
         return jsonify(result), status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -40,7 +40,8 @@ def create_user(data):
 def update_user(user_id):
     """Update a user by ID"""
     try :
-        result, status_code = controller.update_post(user_id)
+        data = request.get_json()
+        result, status_code = controller.update_user(user_id, data)
         return jsonify(result), status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -49,7 +50,7 @@ def update_user(user_id):
 def delete_user(user_id):
     """Delete a user by ID"""
     try:
-        result, status_code = controller.delete_post(user_id)
+        result, status_code = controller.delete_user(user_id)
         return jsonify(result), status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -67,7 +68,8 @@ def get_friends(user_id):
 def add_friend(user_id):
     """Add a friend to a user"""
     try:
-        result, status_code = controller.add_friend(user_id)
+        data = request.get_json()
+        result, status_code = controller.add_friend(user_id, data)
         return jsonify(result), status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -109,9 +111,13 @@ def get_user_posts(user_id):
         return jsonify({"error": str(e)}), 500
 
 @user_bp.route('/<user_id>/posts', methods=['POST'])
-def create_post(user_id, data):
+def create_post(user_id):
     """Create a post for a user"""
     try:
+        data = request.get_json()
+        if 'title' not in data or 'content' not in data:
+            return jsonify({"error": "Missing required fields: title and content are required"}), 400
+            
         result, status_code = controller.add_user_post(user_id, data)
         return jsonify(result), status_code        
     except Exception as e:
