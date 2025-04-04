@@ -1,5 +1,4 @@
-from py2neo import Node, Relationship
-from py2neo.ogm import GraphObject, Property, RelatedTo, RelatedFrom
+from py2neo.ogm import GraphObject, Property, RelatedFrom
 from datetime import datetime
 import uuid
 from app.models.user import User

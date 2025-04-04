@@ -1,8 +1,6 @@
-from py2neo import Node, Relationship
 from py2neo.ogm import GraphObject, Property, RelatedTo, RelatedFrom
 from datetime import datetime
 import uuid
-
 
 class User(GraphObject):
     __primarylabel__ = "User"

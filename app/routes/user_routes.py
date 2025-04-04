@@ -1,6 +1,4 @@
 from flask import Blueprint, request, jsonify
-from app.models.user import User
-from app.models.post import Post
 from app.database import graph
 from app.controllers.user_controller import UserController
 
